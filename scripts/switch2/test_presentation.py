@@ -65,7 +65,7 @@ int main(){
     assert(policy.shouldPresent(true,false,false,start+1000));
     {
         AVFrameQueue queue;
-        queue.configure(3,120,true,4);
+        queue.configure(3,120,true,false,4);
         auto push=[&](int64_t pts){auto* f=queue.acquireWriteFrame();f->pts=pts;assert(queue.pushTransferred(f));};
         bool consumed=true;
         push(1);push(2);
