@@ -28,7 +28,10 @@ def main():
         )
         (tmp / "Settings.hpp").write_text(
             '#pragma once\n#include "Singleton.hpp"\n'
-            "class Settings:public Singleton<Settings>{public:int frames_queue_size(){return 1;}};\n"
+            "class Settings:public Singleton<Settings>{public:"
+            "int frames_queue_size(){return 1;}"
+            "bool low_latency_frame_queue()const{return false;}"
+            "bool low_latency_present()const{return false;}};\n"
         )
         (tmp / "test.cpp").write_text(
             r"""
