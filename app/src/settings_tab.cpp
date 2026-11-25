@@ -224,6 +224,28 @@ SettingsTab::SettingsTab() {
     rcas->removeFromSuperView(true);
 #endif
 
+    lowLatencyFrameQueue->init("settings/low_latency_frame_queue"_i18n,
+                               Settings::instance().low_latency_frame_queue(),
+                               [](bool value) {
+                                   Settings::instance().set_low_latency_frame_queue(value);
+                               });
+
+    lowLatencyPresent->init("settings/low_latency_present"_i18n,
+                            Settings::instance().low_latency_present(),
+                            [](bool value) {
+                                Settings::instance().set_low_latency_present(value);
+                            });
+
+#if defined(PLATFORM_SWITCH) && !defined(PLATFORM_SWITCH2) && defined(SUPPORT_UPSCALING)
+    disablePostProcessing->init("settings/disable_post_processing"_i18n,
+                                Settings::instance().disable_post_processing(),
+                                [](bool value) {
+                                    Settings::instance().set_disable_post_processing(value);
+                                });
+#else
+    disablePostProcessing->removeFromSuperView(true);
+#endif
+
     auto updateNativeResolutionScaleVisibility = [this]() {
         resolutionScale->setVisibility(
             resolution->getSelection() == 0 ? brls::Visibility::VISIBLE

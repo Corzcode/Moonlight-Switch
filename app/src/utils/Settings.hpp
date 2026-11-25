@@ -244,6 +244,15 @@ class Settings : public Singleton<Settings> {
     void set_frames_queue_size(int frames_queue_size) { m_frames_queue_size = frames_queue_size; }
     [[nodiscard]] int frames_queue_size() const { return m_frames_queue_size; }
 
+    void set_low_latency_frame_queue(bool value) { m_low_latency_frame_queue = value; }
+    [[nodiscard]] bool low_latency_frame_queue() const { return m_low_latency_frame_queue; }
+
+    void set_low_latency_present(bool value) { m_low_latency_present = value; }
+    [[nodiscard]] bool low_latency_present() const { return m_low_latency_present; }
+
+    void set_disable_post_processing(bool value) { m_disable_post_processing = value; }
+    [[nodiscard]] bool disable_post_processing() const { return m_disable_post_processing; }
+
     void set_sops(bool sops) { m_sops = sops; }
     [[nodiscard]] bool sops() const { return m_sops; }
 
@@ -366,6 +375,9 @@ class Settings : public Singleton<Settings> {
     bool m_click_by_tap = false;
     int m_decoder_threads = 4;
     int m_frames_queue_size = 3;
+    bool m_low_latency_frame_queue = false;
+    bool m_low_latency_present = false;
+    bool m_disable_post_processing = false;
     bool m_sops = false;
     bool m_play_audio = false;
     bool m_write_log = false;

@@ -128,6 +128,40 @@ AVFrame* AVFrameQueue::pop(bool* consumed) {
         }
     }
 
+    if (latestFrame) {
+        // Latency-first playout: present the newest frame as soon as the
+        // renderer asks for one instead of pacing the queue against the local
+        // draw clock. Everything still queued behind it is older, so drop it.
+        startupBuffering = false;
+        playoutResyncNeeded = false;
+        frameCredit = 0.0;
+
+        if (queue.empty()) {
+            if (bufferFrame) {
+                fakeFrameUsedStat++;
+                emptyQueueStat++;
+            }
+            return bufferFrame;
+        }
+
+        recycleFrame(freeQueue, bufferFrame);
+        while (queue.size() > 1) {
+            AVFrame* droppedFrame = queue.front();
+            queue.pop();
+            recycleFrame(freeQueue, droppedFrame);
+            framesDroppedStat++;
+            pacingSkipStat++;
+        }
+
+        bufferFrame = queue.front();
+        queue.pop();
+
+        if (consumed) {
+            *consumed = true;
+        }
+        return bufferFrame;
+    }
+
     if (startupBuffering && queue.size() <= targetBufferedFrames) {
         if (bufferFrame) {
             fakeFrameUsedStat++;
@@ -255,7 +289,8 @@ void AVFrameQueue::recycleWriteFrame(AVFrame*& frame) {
 }
 
 void AVFrameQueue::configure(
-    size_t queueLimit, int configuredStreamFps, bool transferOwnershipEnabled, size_t capacityLimit)
+    size_t queueLimit, int configuredStreamFps, bool transferOwnershipEnabled,
+    bool latestFrameEnabled, size_t capacityLimit)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     const size_t configuredDepth = std::max<size_t>(queueLimit, 1);
@@ -266,6 +301,7 @@ void AVFrameQueue::configure(
         configuredDepth > 1 ? std::min<size_t>(configuredDepth - 1, 2) : 0;
     targetBufferedFrames  = std::min(targetBufferedFrames, limit - 1);
     transferOwnership = transferOwnershipEnabled;
+    latestFrame = latestFrameEnabled;
     streamFps = configuredStreamFps;
     adaptiveFrameInterval = std::chrono::nanoseconds::zero();
     drawClockStarted = false;

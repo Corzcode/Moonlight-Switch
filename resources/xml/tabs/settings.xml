@@ -72,6 +72,20 @@
 
             <BooleanSliderCell
                 id="rcas"/>
+
+            <brls:Header
+                id="latency_header"
+                title="@i18n/settings/latency_optimization"
+                paddingTop="60"/>
+
+            <brls:BooleanCell
+                id="low_latency_frame_queue"/>
+
+            <brls:BooleanCell
+                id="low_latency_present"/>
+
+            <brls:BooleanCell
+                id="disable_post_processing"/>
             
             <brls:Header
                 title="@i18n/settings/stream_settings"

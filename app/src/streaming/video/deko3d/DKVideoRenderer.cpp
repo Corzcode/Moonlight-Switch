@@ -303,7 +303,8 @@ DKVideoRenderer::~DKVideoRenderer() {
 
 bool DKVideoRenderer::shouldUseUpscaling() const {
 #ifdef SUPPORT_UPSCALING
-    return Settings::instance().upscaling() && m_frame_width > 0 &&
+    return !Settings::instance().disable_post_processing() &&
+           Settings::instance().upscaling() && m_frame_width > 0 &&
            m_frame_height > 0 && m_screen_width > 0 && m_screen_height > 0 &&
            (m_screen_width > m_frame_width || m_screen_height > m_frame_height);
 #else
@@ -313,7 +314,8 @@ bool DKVideoRenderer::shouldUseUpscaling() const {
 
 #ifdef SUPPORT_UPSCALING
 bool DKVideoRenderer::shouldUseDithering() const {
-    return Settings::instance().dithering() && Settings::instance().dithering_strength() > 0.0f && m_frame_width > 0 &&
+    return !Settings::instance().disable_post_processing() &&
+           Settings::instance().dithering() && Settings::instance().dithering_strength() > 0.0f && m_frame_width > 0 &&
            m_frame_height > 0 && m_screen_width > 0 && m_screen_height > 0;
 }
 
@@ -339,7 +341,8 @@ void DKVideoRenderer::updateDitheringConstants() {
 }
 
 bool DKVideoRenderer::shouldUseRcas() const {
-    return Settings::instance().rcas() && Settings::instance().rcas_strength() > 0.0f && m_frame_width > 0 &&
+    return !Settings::instance().disable_post_processing() &&
+           Settings::instance().rcas() && Settings::instance().rcas_strength() > 0.0f && m_frame_width > 0 &&
            m_frame_height > 0 && m_screen_width > 0 && m_screen_height > 0;
 }
 
@@ -955,16 +958,19 @@ void DKVideoRenderer::updateRenderState(int width, int height, AVFrame* frame) {
         m_color_space != static_cast<int>(colorSpace) || m_color_full != colorFull;
 #ifdef SUPPORT_UPSCALING
     const bool requestedDithering =
+        !Settings::instance().disable_post_processing() &&
         Settings::instance().dithering() && frame->width > 0 && frame->height > 0 &&
         width > 0 && height > 0;
 #else
     const bool requestedDithering = false;
 #endif
     const bool requestedUpscaling =
+        !Settings::instance().disable_post_processing() &&
         Settings::instance().upscaling() && frame->width > 0 && frame->height > 0 &&
         width > 0 && height > 0 &&
         (width > frame->width || height > frame->height);
     const bool requestedRcas =
+        !Settings::instance().disable_post_processing() &&
         Settings::instance().rcas() && Settings::instance().rcas_strength() > 0.0f &&
         frame->width > 0 && frame->height > 0 &&
         width > 0 && height > 0;

@@ -24,6 +24,9 @@ class SettingsTab : public brls::Box {
     BRLS_BIND(brls::BooleanCell, upscaling, "upscaling");
     BRLS_BIND(brls::SelectorCell, upscalingMode, "upscaling_mode");
     BRLS_BIND(BooleanSliderCell, rcas, "rcas");
+    BRLS_BIND(brls::BooleanCell, lowLatencyFrameQueue, "low_latency_frame_queue");
+    BRLS_BIND(brls::BooleanCell, lowLatencyPresent, "low_latency_present");
+    BRLS_BIND(brls::BooleanCell, disablePostProcessing, "disable_post_processing");
     BRLS_BIND(brls::SelectorCell, fps, "fps");
     BRLS_BIND(brls::SelectorCell, codec, "codec");
     BRLS_BIND(brls::BooleanCell, requestHdr, "request_hdr");
