@@ -18,6 +18,7 @@
 #include "mapping_layout_editor.hpp"
 #include "halfcon_mapping_view.hpp"
 #include "UpscalingSupport.hpp"
+#include "AVFrameHolder.hpp"
 #include <cmath>
 #include <iomanip>
 #include <sstream>
@@ -228,12 +229,14 @@ SettingsTab::SettingsTab() {
                                Settings::instance().low_latency_frame_queue(),
                                [](bool value) {
                                    Settings::instance().set_low_latency_frame_queue(value);
+                                   AVFrameHolder::instance().applyLatencySettings();
                                });
 
     lowLatencyPresent->init("settings/low_latency_present"_i18n,
                             Settings::instance().low_latency_present(),
                             [](bool value) {
                                 Settings::instance().set_low_latency_present(value);
+                                AVFrameHolder::instance().applyLatencySettings();
                             });
 
 #if defined(PLATFORM_SWITCH) && !defined(PLATFORM_SWITCH2) && defined(SUPPORT_UPSCALING)

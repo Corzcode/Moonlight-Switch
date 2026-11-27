@@ -28,6 +28,8 @@ public:
     [[nodiscard]] size_t size() const;
     [[nodiscard]] size_t targetDepth() const;
     [[nodiscard]] size_t capacity() const;
+    /** Queue size requested by the settings, after the low-latency clamp. */
+    [[nodiscard]] size_t configuredDepth() const;
     [[nodiscard]] size_t getFakeFrameUsage() const;
     [[nodiscard]] size_t getFramesDropStat() const;
     [[nodiscard]] size_t getEmptyQueueStat() const;
@@ -50,6 +52,7 @@ private:
     void resetArrivalRateEstimatorLocked();
     void trimToPlayoutWindowLocked();
     size_t limit = 0;
+    size_t configuredQueueDepth = 0;
     std::queue<AVFrame*> queue;
     std::queue<AVFrame*> freeQueue;
     AVFrame* bufferFrame = nullptr;
@@ -112,17 +115,27 @@ class AVFrameHolder : public Singleton<AVFrameHolder> {
 
     void prepare(int streamFps, bool transferOwnership = false, size_t capacityLimit = 0)
     {
-        int queueSize = Settings::instance().frames_queue_size();
-        if (Settings::instance().low_latency_frame_queue() && queueSize > 2)
-            queueSize = 2;
+        std::lock_guard<std::mutex> lock(m_configMutex);
+        m_streamFps         = streamFps;
+        m_transferOwnership = transferOwnership;
+        m_capacityLimit     = capacityLimit;
+        applyLatencySettingsLocked();
+    }
 
-        m_frame_queue.configure(static_cast<size_t>(queueSize), streamFps,
-                                transferOwnership,
-                                Settings::instance().low_latency_present(),
-                                capacityLimit);
+    /**
+     * Re-apply the queue depth and playout policy without waiting for the next
+     * decoder setup. The latency switches are read here instead of only in
+     * prepare(), so toggling them mid-stream takes effect on the next pop().
+     */
+    void applyLatencySettings()
+    {
+        std::lock_guard<std::mutex> lock(m_configMutex);
+        applyLatencySettingsLocked();
     }
 
     void cleanup() {
+        std::lock_guard<std::mutex> lock(m_configMutex);
+        m_streamFps = 0;
         m_frame_queue.cleanup();
     }
 
@@ -131,6 +144,7 @@ class AVFrameHolder : public Singleton<AVFrameHolder> {
     [[nodiscard]] size_t getFrameQueueSize() const { return m_frame_queue.size(); }
     [[nodiscard]] size_t getFrameQueueTargetDepth() const { return m_frame_queue.targetDepth(); }
     [[nodiscard]] size_t getFrameQueueCapacity() const { return m_frame_queue.capacity(); }
+    [[nodiscard]] size_t getFrameQueueConfiguredDepth() const { return m_frame_queue.configuredDepth(); }
     [[nodiscard]] size_t getFrameQueueEmptyStat() const { return m_frame_queue.getEmptyQueueStat(); }
     [[nodiscard]] size_t getFrameQueueRebufferHoldStat() const { return m_frame_queue.getRebufferHoldStat(); }
     [[nodiscard]] size_t getFrameQueueOverflowDropStat() const { return m_frame_queue.getOverflowDropStat(); }
@@ -142,5 +156,25 @@ class AVFrameHolder : public Singleton<AVFrameHolder> {
     [[nodiscard]] double getFrameQueueEstimatedSourceFps() const { return m_frame_queue.getEstimatedSourceFps(); }
 
   private:
+    void applyLatencySettingsLocked()
+    {
+        // Nothing prepared yet: the decoder setup owns the first configure().
+        if (m_streamFps <= 0)
+            return;
+
+        int queueSize = Settings::instance().frames_queue_size();
+        if (Settings::instance().low_latency_frame_queue() && queueSize > 2)
+            queueSize = 2;
+
+        m_frame_queue.configure(static_cast<size_t>(queueSize), m_streamFps,
+                                m_transferOwnership,
+                                Settings::instance().low_latency_present(),
+                                m_capacityLimit);
+    }
+
+    std::mutex m_configMutex;
+    int m_streamFps             = 0;
+    bool m_transferOwnership    = false;
+    size_t m_capacityLimit      = 0;
     AVFrameQueue m_frame_queue;
 };

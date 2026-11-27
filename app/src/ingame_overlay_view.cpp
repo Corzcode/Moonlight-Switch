@@ -16,6 +16,7 @@
 #include "streaming_input_overlay.hpp"
 #include "button_selecting_dialog.hpp"
 #include "UpscalingSupport.hpp"
+#include "AVFrameHolder.hpp"
 
 #include <cmath>
 #include <iomanip>
@@ -245,6 +246,20 @@ OptionsTab::OptionsTab(StreamingView* streamView) : streamView(streamView) {
                                [](bool value) {
                                    Settings::instance().set_touchscreen_mouse_mode(value);
                                });
+
+    lowLatencyFrameQueue->init("settings/low_latency_frame_queue"_i18n,
+                               Settings::instance().low_latency_frame_queue(),
+                               [](bool value) {
+                                   Settings::instance().set_low_latency_frame_queue(value);
+                                   AVFrameHolder::instance().applyLatencySettings();
+                               });
+
+    lowLatencyPresent->init("settings/low_latency_present"_i18n,
+                            Settings::instance().low_latency_present(),
+                            [](bool value) {
+                                Settings::instance().set_low_latency_present(value);
+                                AVFrameHolder::instance().applyLatencySettings();
+                            });
     
     swapStickToDpad->init("settings/swap_stick_to_dpad"_i18n, Settings::instance().swap_joycon_stick_to_dpad(),
                           [](bool value) { Settings::instance().set_swap_joycon_stick_to_dpad(value); });

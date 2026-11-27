@@ -56,6 +56,8 @@ class OptionsTab : public brls::Box {
     BRLS_BIND(brls::SelectorCell, keyboardType, "keyboard_type");
     BRLS_BIND(brls::SelectorCell, keyboardFingers, "keyboard_fingers");
     BRLS_BIND(brls::BooleanCell, touchscreenMouseMode, "touchscreen_mouse_mode");
+    BRLS_BIND(brls::BooleanCell, lowLatencyFrameQueue, "low_latency_frame_queue");
+    BRLS_BIND(brls::BooleanCell, lowLatencyPresent, "low_latency_present");
     BRLS_BIND(brls::DetailCell, guideKeyButtons, "guide_key_buttons");
     BRLS_BIND(brls::SelectorCell, guideBySystemButton, "guide_by_system_button");
     BRLS_BIND(brls::Header, volumeHeader, "volume_header");

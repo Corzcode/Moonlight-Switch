@@ -471,7 +471,7 @@ std::string StreamingView::buildStatsText() {
                               "Frames presented by local clock: {}\n"
                               "Playout resyncs | estimated source: {} | {:.2f} FPS\n"
                               "Max pushes between draws: {}\n"
-                              "Frames queue depth | target | capacity: {} | {} | {}",
+                              "Frames queue depth | target | capacity | configured: {} | {} | {} | {}",
                               AVFrameHolder::instance().getFakeFrameStat(),
                               AVFrameHolder::instance().getFrameDropStat(),
                               AVFrameHolder::instance().getFrameQueueEmptyStat(),
@@ -485,7 +485,8 @@ std::string StreamingView::buildStatsText() {
                               AVFrameHolder::instance().getFrameQueueMaxPushBurstStat(),
                               AVFrameHolder::instance().getFrameQueueSize(),
                               AVFrameHolder::instance().getFrameQueueTargetDepth(),
-                              AVFrameHolder::instance().getFrameQueueCapacity());
+                              AVFrameHolder::instance().getFrameQueueCapacity(),
+                              AVFrameHolder::instance().getFrameQueueConfiguredDepth());
     return statistics;
 }
 

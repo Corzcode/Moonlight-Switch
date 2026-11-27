@@ -118,6 +118,17 @@
                 id="rcas"/>
             
             <brls:Header
+                title="@i18n/settings/latency_optimization"
+                paddingTop="60"
+                lineTop="1px"/>
+
+            <brls:BooleanCell
+                id="low_latency_frame_queue"/>
+
+            <brls:BooleanCell
+                id="low_latency_present"/>
+            
+            <brls:Header
                 title="@i18n/settings/debug"
                 paddingTop="60"
                 lineTop="1px"/>

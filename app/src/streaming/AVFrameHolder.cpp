@@ -294,6 +294,7 @@ void AVFrameQueue::configure(
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     const size_t configuredDepth = std::max<size_t>(queueLimit, 1);
+    configuredQueueDepth = configuredDepth;
     limit = capacityFor(configuredDepth);
     if (capacityLimit)
         limit = std::min(limit, capacityLimit);
@@ -328,6 +329,11 @@ size_t AVFrameQueue::targetDepth() const {
 size_t AVFrameQueue::capacity() const {
     std::lock_guard<std::mutex> lock(m_mutex);
     return limit;
+}
+
+size_t AVFrameQueue::configuredDepth() const {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return configuredQueueDepth;
 }
 
 size_t AVFrameQueue::getFakeFrameUsage() const {
